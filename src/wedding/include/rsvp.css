@@ -1,0 +1,113 @@
+.control-group {
+    margin-top: 14px;
+    padding: 0 15px 0 10px;
+}
+
+.label-column {
+    float: left;
+    width: 40%;
+    line-height: 17px;
+    margin-top: 4px;
+}
+
+.control-column {
+    float: right;
+    width: 60%;
+}
+
+.controls {
+    float: left;
+    margin-top: 4px;
+    padding: 0px;
+}
+
+.status {
+    float: right;
+    width: 33px;
+    height: 33px;
+    background-repeat: no-repeat;
+}
+
+.oops {
+    float: right;
+    margin-top: 18px;
+}
+
+.hide {
+    display: none;
+}
+
+.width {
+    width: 85%;
+}
+
+.box1 {
+    height: 50px;
+}
+
+.box2 {
+    height: 100px;
+}
+
+.error-text {
+    color: #df505c;
+}
+
+form .error {
+    border: solid 3px #df505c;
+    margin: 0 -2px -2px -2px;
+}
+
+form .error + .status {
+    background-image: url('../images/cross.png');
+}
+
+form .valid + .status {
+    background-image: url('../images/tick.png');
+}
+
+p {
+    margin: 0px;
+    padding: 0px;
+}
+
+select {
+    line-height: normal;
+    margin: 0px;
+    padding: 0px;
+    width: 100%;
+}
+
+input {
+    line-height: normal;
+    margin: 0px;
+    padding: 0px;
+}
+
+input[type="text"] {
+    overflow: visible;
+    padding: 5px 8px;
+    border: solid 1px #8a8681;
+    width: 100%;
+}
+
+input[type="radio"] {
+    height: 15px;
+    margin-left: 5px;
+    margin-right: 5px;
+    padding: 5px;
+}
+
+input[type="button"] {
+    height: 25px;
+    padding: 0 10px 0 10px;
+    border: 1px solid;
+    margin-top: 15px;
+}
+
+textarea {
+    margin: 0px;
+    padding: 5px 8px;
+    width: 100%;
+}
+

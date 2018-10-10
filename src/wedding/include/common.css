@@ -1,0 +1,131 @@
+body {
+    background: rgb(250, 242, 220);
+}
+
+.border {
+    position: relative;
+    width: 900px;
+    min-height: 600px;
+    margin: 0 auto 0 auto;
+    padding: 5px;
+    border: 10px solid rgb(102, 0, 50);
+    background: rgb(250, 242, 220);
+}
+
+.container {
+    width: 74%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.content {
+    padding: 0 15px 0 10px;
+}
+
+.footer {
+    position: absolute;
+    width: 100%;
+    bottom: 2px;
+}
+
+.float-left {
+    float: left;
+}
+
+.float-right {
+    float: right;
+}
+
+.footer-right {
+    margin-right: 10px;
+}
+
+.new-page {
+    margin:0 auto;
+    width:940px;
+    min-width:940px;
+    padding:0 19px 0 19px;
+    position:relative
+}
+
+.menu-container {
+    width: 74%;
+    margin-left: auto;
+    margin-right: auto;
+    //text-align: center;
+}
+
+.menu {
+    display: inline-block;
+    list-style-type: none;
+    margin: 0 0 0 0;
+    padding: 0;
+    line-height: normal;
+    position: relative;
+}
+
+.menu-item {
+    float: left;
+    position: relative;
+    line-height: normal;
+    padding: 0 10px 0 10px;
+    margin: 0;
+    height: 27px;
+}
+
+.clear {
+    clear: both;
+    font-size: 1px;
+    line-height: 0;
+    height: 0;
+}
+
+.center {
+    text-align: center;
+}
+
+div a {
+    text-decoration: none;
+}
+
+ul a {
+    text-decoration: none;
+    height: 27px;
+    color: #8a8681;
+}
+
+ul a:hover {
+    color: black;
+}
+
+li.selected a {
+    color: black;
+    border-width: 2px;
+    border-bottom-style: solid;
+}
+
+#headerline {
+    color: rgb(250, 242, 220);
+}
+
+.burgundy-text {
+    color: rgb(140, 0, 26);
+    text-align: center;
+}
+
+.white-text {
+    color: white;
+    text-align: center;
+}
+
+.font-size-12 {
+    font-size: 12px;
+}
+
+.font-size-14 {
+    font-size: 14px;
+}
+
+.font-size-24 {
+    font-size: 24px;
+}
