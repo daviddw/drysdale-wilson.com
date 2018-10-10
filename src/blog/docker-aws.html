@@ -1,0 +1,124 @@
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="David Drysdale-Wilson's Blog" />
+        <meta name="keywords" content="WebSocket, .NET Core, Docker, AWS, ECS, Lambda, SQS, SNS, EC2, API Gateway, S3, CloudFormation" />
+        <title>Building a .NET Core WebSocket Server using Docker and AWS</title>
+        <link rel="stylesheet" href="style/article.css" />
+    </head>
+    <body>
+        <header>
+            <div class="header">
+                <div class="wrapper">
+                    <div class="block">
+                        <div class="vertical-align-middle">
+                            <a href="index.html">
+                                <div class="arrow left"></div>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="subtitle">Building a web service using .NET Core, Docker and AWS</div>
+                </div>
+            </div>
+        </header>
+        <div class="content">
+            <div class="article white-background">
+                <h2 class="content-header">Overview</h2>
+                <p class="paragraph content-text">In this article we discuss how to setup and run a web service, written in .NET Core, from a Docker container hosted on an AWS using ECS.</p>
+                <p class="paragraph content-text">The article has been written assuming development on macOS and assumes you have the following frameworks installed,</p>
+                <ul>
+                    <li>Docker - <a href="https://www.docker.com/get-started">https://www.docker.com/get-started</a></li>
+                    <li>Visual Studio - <a href="https://visualstudio.microsoft.com">https://visualstudio.microsoft.com</a></li>
+                    <li>AWS command line tools - <a href="https://aws.amazon.com/cli/">https://aws.amazon.com/cli/</a></li>
+                </ul>
+                <p class="paragraph content-text">The full source code for the code excerpts found in this article can be found in my git repo aws-ws, <a href="https://github.com/daviddw/aws-ws">https://github.com/daviddw/aws-ws</a></p>
+                <h3 class="content-subheader">Installing AWS CLI on macOS</h3>
+                <p class="paragraph content-text">Steps for installing AWS CLI, with pip, are shown below,</p>
+                <div class="content-text-code">$ sudo easy_install pip</div>
+                <div class="content-text-code">$ sudo -H pip install awscli -ignore-installed six</div>
+                <h3 class="content-subheader">Configuring AWS CLI</h3>
+                <p class="paragraph content-text">To configure AWS CLI use the following command,</p>
+                <div class="content-text-code">
+                    <div>$ aws configure</div>
+                    <div>AWS Access Key ID [None]: AKIAIOSFODNN7EXAMPLE</div>
+                    <div>AWS Secret Access Key [None]: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY</div>
+                    <div>Default region name [None]: us-west-2</div>
+                    <div>Default output format [None]: json</div>
+                </div>
+                <p class="paragraph content-text">Further information can found at <a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html">https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html</a>.</p>
+                <h3 class="content-subheader">Creating a WebSocket server with .NET Core</h3>
+                <p class="paragraph content-text">Using Visual Studio, create a new project and select the 'ASP.NET Core Empty' template.</p>
+                <p class="paragraph content-text">Add the following code to the 'Configure' method to add WebSocket support to the application,</p>
+                <div class="content-text-code">
+                    <div>private const uint kWebSocketKeepAliveIntervale = 30;</div>
+                    <br/>
+                    <div>public void Configure(IApplicationBuilder app, IHostingEnvironment env)</div>
+                    <div>{</div>
+                    <div class="tabs4">// other pipeline configuration</div>
+                    <br/>
+                    <div class="tabs4">app.UseWebSockets(new WebSocketOptions</div>
+                    <div class="tabs4">{</div>
+                    <div class="tabs8">KeepAliveInterval = TimeSpan.FromSeconds(kWebSocketKeepAliveIntervale)</div>
+                    <div class="tabs4">});</div>
+                    <br/>
+                    <div class="tabs4">app.MapWhen(IsWebSocketRequest, x => x.UseMiddleware&lt;WebSocketManagerMiddleware&gt;());</div>
+                    <div>}</div>
+                    <br/>
+                    <div>private bool IsWebSocketRequest(HttpContext context)</div>
+                    <div >{</div>
+                    <div class="tabs4">if (!context.WebSockets.IsWebSocketRequest)</div>
+                    <div class="tabs4">{</div>
+                    <div class="tabs8">return false;</div>
+                    <div class="tabs4">}</div>
+                    <br/>
+                    <div class="tabs4">return true;</div>
+                    <div>}</div>
+                    <br/>
+                    <div>public class WebSocketManagerMiddleware</div>
+                    <div>{</div>
+                    <div class="tabs4">public async Task Invoke(HttpContext context)</div>
+                    <div class="tabs4">{</div>
+                    <div class="tabs8">var socket = await context.WebSockets.AcceptWebSocketAsync();</div>
+                    <br/>
+                    <div class="tabs8">// send and receive on accepted websocket, returning when closed</div>
+                    <div class="tabs4">}</div>
+                    <div>}</div>
+                </div>
+                <h3 class="content-subheader">Building a docker image with our WebSocket server</h3>
+                <p class="paragraph content-text">First we need to create a 'Dockerfile' which will describe our image.</p>
+                <div class="content-text-code">
+                    <div># download base dotnet 2.0-runtime image</div>
+                    <div>FROM microsoft/dotnet:2.0-runtime</div>
+                    <br/>
+                    <div># configure the port that the WebSocket server is listening on</div>
+                    <div>EXPOSE 3000</div>
+                    <br/>
+                    <div>WORKDIR /app</div>
+                    <br/>
+                    <div># copy the WebSocket server build artifacts</div>
+                    <div>COPY aws-service-test/deploy/Release .</div>
+                    <div>COPY launch.sh .</div>
+                    <br/>
+                    <div>ENTRYPOINT ["/bin/bash", "launch.sh"]</div>
+                </div>
+                <p class="paragraph content-text">Now we have a Dockerfile which defines the runtime environment, we can build a new Docker image with the following command,</p>
+                <div class="content-text-code">$docker build -t repository/image:tag .</div>
+                <p class="paragraph content-text">Once the image is built we can run the new container, with the command,</p>
+                <div class="content-text-code">$docker run -d -p 3000:3000 --name container repository/image_name:tag</div>
+                <ul>
+                    <li>--name container repository/image:tag - creates a new container with the name 'container', with the image 'repository/image:tag'</li>
+                    <li>-p 3000:3000 - maps container port 3000 to host machine port 3000
+                </ul>
+            </div>
+            <div class="table full-width">
+                <div class="table-cell linkedin">
+                    <a class="table" href="http://www.linkedin.com/in/david-drysdale-wilson">
+                        <div class="table-cell vertical-align-middle pad-1px-right">Linked</div>
+                        <img class="table-cell" src="../images/In-2C-14px.png" />
+                    </a>
+                </div>
+                <div class="copyright">&copy; 2018 David Drysdale-Wilson</div>
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,265 @@
+body {
+	background-color: #dfe9ef;
+	color: #252b33;
+	margin: 0 0 8px 0;
+}
+
+h2 {
+	margin: 0;
+	padding-left: 22%;
+	line-height: 1.250em;
+	font-size: 1.000em;
+	font-family: arial, sans-serif;
+	font-weight: normal;
+}
+@media only screen and (min-width: 38.75em) {
+	h2 {
+		font-size: 1.875em;
+	}
+}
+
+p {
+	padding-left: 22%;
+	margin: 0em;
+	font-size: 0.7em;
+	font-family: arial, sans-serif;
+}
+@media only screen and (min-width: 38.75em) {
+	p {
+		font-size: 1em;
+	}
+}
+
+.header {
+	display: table;
+	width: 100%;
+	background-color: #252b33;
+	color: #fff;
+	line-height: 88px;
+	text-align: center;
+	font-size: 1.500em;
+	font-family: arial, sans-serif;
+}
+@media only screen and (min-width: 38.75em) {
+	.header {
+		line-height: 165px;
+		font-size: 2.500em;
+	}
+}
+
+.header .vertical-align-middle {
+	display: table-cell;
+	vertical-align: middle;
+	padding-left: 25px;
+}
+@media only screen and (min-width: 38.75em) {
+	.header .vertical-align-middle {
+		padding-left: 50px;
+	}
+}
+
+.header .subtitle {
+	font-size: 0.750em;
+}
+@media only screen and (min-width: 38.75em) {
+	.header .subtitle {
+		font-size: 0.750em;
+	}
+}
+
+.section {
+	position: relative;
+}
+
+.section .block {
+	display: table;
+	position: absolute;
+	margin: auto;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+}
+
+.header .arrow {
+	border: solid #fff;
+    border-width: 0 3px 3px 0;
+    display: inline-block;
+    padding: 4px;
+}
+@media only screen and (min-width: 38.75em) {
+	.header .arrow {
+		border-width: 0 3px 3px 0;
+		padding: 5px;
+	}
+}
+
+.header .left {
+	transform: rotate(135deg);
+    -webkit-transform: rotate(135deg);
+}
+
+.content {
+	width: 80%;
+	margin: 0 auto;
+	/*max-width: 650px;*/
+}
+
+.menu {
+	list-style: none;
+	padding: 0;
+	margin-bottom: 2.000em;
+}
+
+.menu li {
+	margin-bottom: 0.500em;
+	/*border-left: 5px solid #dfe9ef;*/
+}
+
+.menu a, .linkedin a {
+	color: inherit;
+	text-decoration: none;
+}
+
+/*.menu li:active {
+	/*border-left: 5px solid #1877c8;*/
+	/*border-top: 5px solid #dfe9ef;*/
+	/*margin: 0.313em 0.313em 0.650em 0.313em;
+}*/
+
+.white-background {
+	background-color: #ffffff;
+}
+
+.date {
+	padding-bottom: 10px;
+	text-transform: uppercase;
+	font-size: 1.0em;
+	font-family: arial, sans-serif;
+}
+
+.icon {
+	padding-bottom: 10px;
+	text-align: center;
+}
+
+.menu .wrapper {
+	padding-top: 15px;
+	padding-bottom: 30px;
+    display: table;
+    width: 100%;
+}
+
+.menu .block {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.menu .description {
+	width: 100%;
+	padding-left: 10%;
+	padding-right: 5%;
+}
+
+.menu h2 {
+	text-transform: uppercase;
+}
+
+.menu h2, .menu p {
+	padding-left: 0px;
+}
+
+.menu p {
+	padding-top: 10px;
+	line-height: 1.50em;
+}
+
+.menu .right-aligned-container {
+	text-align: right;
+	padding-right: 20px;
+}
+
+.menu .fade-opacity {
+	opacity: 1;
+}
+@media only screen and (min-width: 38.75em) {
+	.menu .fade-opacity {
+		opacity: 0;
+		-webkit-transition: all .7s ease;
+		-moz-transition: all .7s ease;
+		-ms-transition: all .7s ease;
+		-o-transition: all .7s ease;
+		transition: all .7s ease;
+	}
+}
+
+@media only screen and (min-width: 38.75em) {
+	.menu a:hover .fade-opacity {
+		opacity: 1;
+	}
+}
+
+.menu .arrow {
+	border: solid #252b33;
+    border-width: 0 1px 1px 0;
+    display: inline-block;
+    padding: 6px;
+}
+@media only screen and (min-width: 38.75em) {
+	.menu .arrow {
+		border-width: 0 3px 3px 0;
+	}
+}
+
+.menu .right {
+	transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg);
+}
+
+.clear {
+	clear: both;
+}
+
+.table {
+	display: table;
+}
+
+.full-width {
+	width: 100%;
+}
+
+.table-cell {
+	display: table-cell;
+}
+
+.vertical-align-middle {
+	vertical-align: middle;
+}
+
+.pad-1px-right {
+	padding-right: 1px;
+}
+
+.linkedin {
+	text-align: left;
+	font-size: 0.750em;
+	font-family: arial, sans-serif;
+}
+@media only screen and (min-width: 38.75em) {
+	.linkedin {
+		font-size: 0.875em;
+	}
+}
+
+.copyright {
+	display: table-cell;
+	vertical-align: middle;
+	text-align: right;
+	font-size: 0.750em;
+	font-family: arial, sans-serif;
+}
+@media only screen and (min-width: 38.75em) {
+	.copyright {
+		font-size: 0.875em;
+	}
+}
