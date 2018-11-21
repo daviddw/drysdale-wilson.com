@@ -42,6 +42,10 @@ p {
 	}
 }
 
+ul.decimal {
+	list-style-type: decimal;
+}
+
 ul {
 	margin: 0 auto;
 	padding: 0 0 0 65px;
@@ -57,43 +61,44 @@ ul {
 }
 
 .header {
+	height: 88px;
 	background-color: #252b33;
 	color: #fff;
 	text-align: center;
-	line-height: 88px;
 	font-size: 1.500em;
 	font-family: arial, sans-serif;
 }
 @media only screen and (min-width: 38.75em) {
 	.header {
-		line-height: 165px;
+		height: 165px;
 		font-size: 2.500em;
 	}
 }
 
+.header .subtitle {
+	display: table-cell;
+	width: 100%;
+	vertical-align: middle;
+	padding-right: 10%;
+	font-size: 0.750em;
+}
+@media only screen and (min-width: 38.75em) {
+	.header .subtitle {
+		font-size: 0.750em;
+	}
+}
+
 .header .wrapper {
-    position: relative;
+    display: table;
+    width: 100%;
+    height: 100%;
 }
 
 .header .block {
-	display: table;
-	position: absolute;
-	margin: auto;
-	left: 50px;
-	right: 0;
-	top: 0;
-	bottom: 0;
-}
-
-.header .block .vertical-align {
 	display: table-cell;
+	width: 10%;
 	vertical-align: middle;
-	padding-left: 25px;
-}
-@media only screen and (min-width: 38.75em) {
-	.header .block .vertical-align {
-		padding-left: 50px;
-	}
+	text-align: center;
 }
 
 .header .arrow {
@@ -199,6 +204,14 @@ ul {
 		font-size: 0.800em;
 		line-height: 1.500em;
 	}
+}
+
+.content-image {
+	max-width: 100%;
+	display: block;
+	margin: 0 auto;
+	padding-top: 1.000em;
+	padding-bottom: 1.000em;
 }
 
 .tabs4 {

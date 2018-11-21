@@ -11,11 +11,9 @@
             <div class="header">
                 <div class="wrapper">
                     <div class="block">
-                        <div class="vertical-align-middle">
-                            <a href="index.html">
-                                <div class="arrow left"></div>
-                            </a>
-                        </div>
+                        <a href="index.html">
+                            <div class="arrow left"></div>
+                        </a>
                     </div>
                     <div class="subtitle">Building a web service using .NET Core, Docker and AWS</div>
                 </div>
@@ -24,20 +22,21 @@
         <div class="content">
             <div class="article white-background">
                 <h2 class="content-header">Overview</h2>
-                <p class="paragraph content-text">In this article we discuss how to setup and run a web service, written in .NET Core, from a Docker container hosted on an AWS using ECS.</p>
-                <p class="paragraph content-text">The article has been written assuming development on macOS and assumes you have the following frameworks installed,</p>
+                <p class="paragraph content-text">This article discusses how to setup and run a web service, written in .NET Core, using Docker, hosted on AWS. The diagram below provides a high level overview of the system we are going to implement.</p>
+                <img id="overview" class="content-image" alt="Architecture Overview" src="images/docker-aws-overview.png" />
+                <p class="paragraph content-text">The article has been written with the assumption that development will happen on macOS and the following frameworks have been installed,</p>
                 <ul>
                     <li>Docker - <a href="https://www.docker.com/get-started">https://www.docker.com/get-started</a></li>
                     <li>Visual Studio - <a href="https://visualstudio.microsoft.com">https://visualstudio.microsoft.com</a></li>
                     <li>AWS command line tools - <a href="https://aws.amazon.com/cli/">https://aws.amazon.com/cli/</a></li>
                 </ul>
-                <p class="paragraph content-text">The full source code for the code excerpts found in this article can be found in my git repo aws-ws, <a href="https://github.com/daviddw/aws-ws">https://github.com/daviddw/aws-ws</a></p>
+                <p class="paragraph content-text">The full source code for this article's code excerpts can be found in the git repository, <a href="https://github.com/daviddw/aws-ws">https://github.com/daviddw/aws-ws</a></p>
                 <h3 class="content-subheader">Installing AWS CLI on macOS</h3>
-                <p class="paragraph content-text">Steps for installing AWS CLI, with pip, are shown below,</p>
+                <p class="paragraph content-text">Amazon provide steps for installing their CLI on their website, <a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-install-macos.html">https://docs.aws.amazon.com/cli/latest/userguide/cli-install-macos.html</a>, however, I found that I needed some minor changes to their suggested commands. The commands I ran to install AWS CLI on macOS are shown below,</p>
                 <div class="content-text-code">$ sudo easy_install pip</div>
                 <div class="content-text-code">$ sudo -H pip install awscli -ignore-installed six</div>
-                <h3 class="content-subheader">Configuring AWS CLI</h3>
-                <p class="paragraph content-text">To configure AWS CLI use the following command,</p>
+                <h3 class="content-subheader">Configuring AWS CLI on macOS</h3>
+                <p class="paragraph content-text">Amazon provide steps for configuring their CLI on their website, <a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html">https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html</a>, but for convenience I have included the configuration command below,</p>
                 <div class="content-text-code">
                     <div>$ aws configure</div>
                     <div>AWS Access Key ID [None]: AKIAIOSFODNN7EXAMPLE</div>
@@ -45,20 +44,18 @@
                     <div>Default region name [None]: us-west-2</div>
                     <div>Default output format [None]: json</div>
                 </div>
-                <p class="paragraph content-text">Further information can found at <a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html">https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html</a>.</p>
-                <h3 class="content-subheader">Creating a WebSocket server with .NET Core</h3>
-                <p class="paragraph content-text">Using Visual Studio, create a new project and select the 'ASP.NET Core Empty' template.</p>
-                <p class="paragraph content-text">Add the following code to the 'Configure' method to add WebSocket support to the application,</p>
+                <h3 class="content-subheader">Creating the web service with .NET Core</h3>
+                <p class="paragraph content-text">Using Visual Studio, create a new project and select the "ASP.NET Core Empty" template.</p>
+                <p class="paragraph content-text">The Visual Studio template will create a minimal web service configured to run on port 3000.</p>
+                <p class="paragraph content-text">Our web service, as shown the high level overview diagram, comprises of a web socket server, which will forward any data sent to our web service by the AppVeyor webhook. To add web socket support to the web service we need to add the following code,</p>
                 <div class="content-text-code">
-                    <div>private const uint kWebSocketKeepAliveIntervale = 30;</div>
-                    <br/>
                     <div>public void Configure(IApplicationBuilder app, IHostingEnvironment env)</div>
                     <div>{</div>
                     <div class="tabs4">// other pipeline configuration</div>
                     <br/>
                     <div class="tabs4">app.UseWebSockets(new WebSocketOptions</div>
                     <div class="tabs4">{</div>
-                    <div class="tabs8">KeepAliveInterval = TimeSpan.FromSeconds(kWebSocketKeepAliveIntervale)</div>
+                    <div class="tabs8">KeepAliveInterval = TimeSpan.FromSeconds(30)</div>
                     <div class="tabs4">});</div>
                     <br/>
                     <div class="tabs4">app.MapWhen(IsWebSocketRequest, x => x.UseMiddleware&lt;WebSocketManagerMiddleware&gt;());</div>
@@ -84,8 +81,12 @@
                     <div class="tabs4">}</div>
                     <div>}</div>
                 </div>
-                <h3 class="content-subheader">Building a docker image with our WebSocket server</h3>
-                <p class="paragraph content-text">First we need to create a 'Dockerfile' which will describe our image.</p>
+                <p class="paragraph content-text">Running the web service should now allow a websocket client to connect on the address,</p>
+                <div class="content-text-code">
+                    <div>ws://localhost:3000</div>
+                </div>
+                <h3 class="content-subheader">Running the web service in a Docker image</h3>
+                <p class="paragraph content-text">Now we have our web service up and running, the next step is to containerise the service. To do this, we first need to create a Dockerfile, which describes our container.</p>
                 <div class="content-text-code">
                     <div># download base dotnet 2.0-runtime image</div>
                     <div>FROM microsoft/dotnet:2.0-runtime</div>
@@ -101,13 +102,35 @@
                     <br/>
                     <div>ENTRYPOINT ["/bin/bash", "launch.sh"]</div>
                 </div>
-                <p class="paragraph content-text">Now we have a Dockerfile which defines the runtime environment, we can build a new Docker image with the following command,</p>
-                <div class="content-text-code">$docker build -t repository/image:tag .</div>
-                <p class="paragraph content-text">Once the image is built we can run the new container, with the command,</p>
-                <div class="content-text-code">$docker run -d -p 3000:3000 --name container repository/image_name:tag</div>
+                <p class="paragraph content-text">Next we build the Docker image,</p>
+                <div class="content-text-code">$ docker build -t repository/image:tag .</div>
+                <p class="paragraph content-text">Once the Docker image is build, we can run a container with the image, using the following command,</p>
+                <div class="content-text-code">$ docker run -d -p 3000:3000 --name container repository/image_name:tag</div>
                 <ul>
-                    <li>--name container repository/image:tag - creates a new container with the name 'container', with the image 'repository/image:tag'</li>
-                    <li>-p 3000:3000 - maps container port 3000 to host machine port 3000
+                    <li>--name container repository/image:tag - creates a new container with the name 'container', using the image 'repository/image_name:tag'</li>
+                    <li>-p 3000:3000 - maps container port 3000 to host machine port 3000</li>
+                </ul>
+                <p class="paragraph content-text">As before, we should be able connect to the web service's websocket server, (which is now running in a container), on the address,</p>
+                <div class="content-text-code">
+                    <div>ws://localhost:3000</div>
+                </div>
+                <h3 class="content-subheader">Publishing an image to Docker Hub</h3>
+                <p class="paragraph content-text">Docker Hub is a cloud-based registry service, that provides a centralised location for container image distribution and change management, <a href="https://hub.docker.com">https://hub.docker.com</a>.</p>
+                <p class="paragraph content-text">Before you can publish a container image to Docker Hub you will need to have created an account and repository.</p>
+                <p class="paragraph content-text">Once you have created an account and repository, to push an image to Docker Hub, you use the following command,</p>
+                <div class="content-text-code">
+                    <div>$ docker push username/repository</div>
+                </div>
+                <h3 class="content-subheader">Hosting the web service on AWS</h3>
+                <p class="paragraph content-text">Now that we have our web service running in a Docker container, then next step is to get it running in AWS.</p>
+                <p class="paragraph content-text">The diagram below shows the architecture of our example web service hosted on AWS.</p>
+                <img id="aws-overview" class="content-image" alt="AWS Architecture Overview" src="images/docker-aws-data.png" />
+                <p class="paragraph content-text">The example web service works as follows,</p>
+                <ul class="decimal">
+                    <li>When a build on AppVeyor is triggered, AppVeyor POSTs a JSON document to http://&lt;hostname&gt;/appveyor on our public HTTP API, hosted by the AWS API Gateway service</li>
+                    <li>Receiving the POST triggers an AWS lambda function, which publishes the JSON document to an AWS SNS topic</li>
+                    <li>The SNS topic then pushes the JSON document to our subscribed AWS SQS queue</li>
+                    <li>The web socket server polls the AWS SQS queue, retrieves the JSON document and sends it on to all the connected web socket clients</li>
                 </ul>
             </div>
             <div class="table full-width">
