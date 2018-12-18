@@ -41,13 +41,13 @@
                     <div>$ aws configure</div>
                     <div>AWS Access Key ID [None]: AKIAIOSFODNN7EXAMPLE</div>
                     <div>AWS Secret Access Key [None]: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY</div>
-                    <div>Default region name [None]: us-west-2</div>
+                    <div>Default region name [None]: eu-west-2</div>
                     <div>Default output format [None]: json</div>
                 </div>
                 <h3 class="content-subheader">Creating the web service with .NET Core</h3>
                 <p class="paragraph content-text">Using Visual Studio, create a new project and select the "ASP.NET Core Empty" template.</p>
                 <p class="paragraph content-text">The Visual Studio template will create a minimal web service configured to run on port 3000.</p>
-                <p class="paragraph content-text">Our web service, as shown the high level overview diagram, comprises of a web socket server, which will forward any data sent to our web service by the AppVeyor webhook. To add web socket support to the web service we need to add the following code,</p>
+                <p class="paragraph content-text">Our web service, as shown in the high level overview diagram, comprises of a web socket server, which will forward any data sent to our web service by the AppVeyor webhook. To add web socket support to the web service we need to add the following code,</p>
                 <div class="content-text-code">
                     <div>public void Configure(IApplicationBuilder app, IHostingEnvironment env)</div>
                     <div>{</div>
@@ -132,6 +132,106 @@
                     <li>The SNS topic then pushes the JSON document to our subscribed AWS SQS queue</li>
                     <li>The web socket server polls the AWS SQS queue, retrieves the JSON document and sends it on to all the connected web socket clients</li>
                 </ul>
+                <h3 class="content-subheader">Creating an AWS SQS Queue and an AWS SNS Topic</h3>
+                <p class="paragraph content-text">The following Cloudformation creates a queue with default properties,</p>
+                <div class="content-text-code">
+                    <div>queue:</div>
+                    <div class="tabs2">Type: AWS::SQS::Queue</div>
+                </div>
+                <p class="paragraph content-text">And the following Cloudformation creates a topic with default properties,</p>
+                <div class="content-text-code">
+                    <div>topic:</div>
+                    <div class="tabs2">Type: AWS::SNS::Topic</div>
+                </div>
+                <p class="paragraph content-text">We then want our queue to subscribe to our topic in order to for our queue to receive any message that are published to our topic. The following Cloudformation will subscribe our queue to our topic,</p>
+                <div class="content-text-code">
+                    <div>subscription:</div>
+                    <div class="tabs2">Type: AWS::SNS::Subscription</div>
+                    <div class="tabs2">Properties:</div>
+                    <div class="tabs4">TopicArn: !Ref topic</div>
+                    <div class="tabs4">Endpoint: !GetAtt queue.Arn</div>
+                    <div class="tabs4">Protocol: sqs</div>
+                    <div class="tabs4">RawMessageDelivery: true</div>
+                </div>
+                <h3 class="content-subheader">Creating a Lambda Function with .NET Core</h3>
+                <p class="paragraph content-text">Using Visual Studio, create a new project and select the "Class Library" template, under .NET Core.</p>
+                <p class="paragraph content-text">The Visual Studio template will create an empty .NET Core class library. Pay attention to the assembly, namespace, class and method names, as the lambda's handler signature is comprised of all four, i.e.,</p>
+                <div class="content-text-code">
+                    <div>Assembly::Namespace.ClassName::MethodName</div>
+                </div>
+                <p class="paragraph content-text">Our example lambda function is very simple. As shown in the architecture diagram above, the lambda receives an HTTP POST request from the API gateway, extracts the request's body, and publishes the request's body to our SNS topic. To provide this functionality the following code should be added to the empty class library project,</p>
+                <div class="content-text-code">
+                    <div>public APIGatewayProxyResponse FunctionHandler(APIGatewayProxyRequest input, ILambdaContext context)</div>
+                    <div>{</div>
+                    <div class="tabs4">var config = new AmazonSimpleNotificationServiceConfig();</div>
+                    <div class="tabs4">config.ServiceURL = "https://sns.eu-west-2.amazonaws.com/";</div>
+                    <div></div>
+                    <div class="tabs4">var client = new AmazonSimpleNotificationServiceClient(config);</div>
+                    <div></div>
+                    <div class="tabs4">var request = new PublishRequest</div>
+                    <div class="tabs4">{</div>
+                    <div class="tabs8">TopicArn = arn:aws:sns:eu-west-2:&lt;account-id&gt;:&lt;topicname&gt;,</div>
+                    <div class="tabs8">Message = input.Body,</div>
+                    <div class="tabs4">};</div>
+                    <div></div>
+                    <div class="tabs4">client.PublishAsync(request).Wait();</div>
+                    <div></div>
+                    <div class="tabs4">var response = new APIGatewayProxyResponse</div>
+                    <div class="tabs4">{</div>
+                    <div class="tabs8">StatusCode = (int)HttpStatusCode.OK,</div>
+                    <div class="tabs8">Body = input.Body,</div>
+                    <div class="tabs8">Header = new Dictionary<string, string> { { "Content-Type", "text/plain" } },</div>
+                    <div class="tabs4">};</div>
+                    <div></div>
+                    <div class="tabs4">return response;</div>
+                    <div>}</div>
+                </div>
+                <h3 class="content-subheader">Setting up an API Gateway and Lambda with AWS SAM</h3>
+                <p class="paragraph content-text">The AWS Serverless Application Model (SAM) is a new specification that makes it easy to deploy Serverless applications on AWS. It is possible with AWS SAM to specify Lambda functions and API Gateway APIs using AWS Cloudformation.</p>
+                <p class="paragraph content-text">In order to inform Cloudformation that the template defines a a Serverless application you need to add the following line under the template format version,</p>
+                <div class="content-text-code">
+                    <div>Transform: AWS::Serverless-2016-10-31</div>
+                </div>
+                <p class="paragraph content-text">The Cloudformation template below declares our Lambda function and creates an API Gateway event source that triggers the Lambda function on a POST to /appveyor.</p>
+                <div class="content-text-code">
+                    <div>postFunction:</div>
+                    <div class="tabs2">Type: AWS::Serverless::Function</div>
+                    <div class="tabs2">Properties:</div>
+                    <div class="tabs4">Runtime: dotnetcore2.1</div>
+                    <div class="tabs4">Handler: aws-lambda-test::aws_lambda_test.Function::FunctionHandler</div>
+                    <div class="tabs4">CodeUri:</div>
+                    <div class="tabs6">Bucket: lambda-function-bucket</div>
+                    <div class="tabs6">Key: aws-lambda-example.zip</div>
+                    <div class="tabs4">Policies: !Ref awsLambdaPolicy</div>
+                    <div class="tabs4">Timeout: 30</div>
+                    <div class="tabs4">Events:</div>
+                    <div class="tabs6">postToLambda:</div>
+                    <div class="tabs8">Type: Api</div>
+                    <div class="tabs8">Properties:</div>
+                    <div class="tabs10">Path: /appveyor</div>
+                    <div class="tabs10">Method: POST</div>
+                </div>
+                <p class="paragraph content-text">We provide our Lambda function with the appropriate permissions through a policy. The awsLambdaPolicy policy defines permission to allow logging to AWS CloudWatch and publishing to an SNS Topic. The policy is defined in Cloudformation below,</p>
+                <div class="content-text-code">
+                    <div>awsLambdaPolicy:</div>
+                    <div class="tabs2">Type: AWS::IAM::ManagedPolicy</div>
+                    <div class="tabs2">Properties:</div>
+                    <div class="tabs4">PolicyDocument:</div>
+                    <div class="tabs6">Version: 2012-10-17</div>
+                    <div class="tabs6">Statement:</div>
+                    <div class="tabs8">- Effect: Allow</div>
+                    <div class="tabs8">Action:</div>
+                    <div class="tabs10">- logs:CreateLogGroup</div>
+                    <div class="tabs10">- logs:CreateLogStream</div>
+                    <div class="tabs10">- logs:PutLogEvents</div>
+                    <div class="tabs10">- sns:Publish</div>
+                    <div class="tabs8">Resource: "*"</div>
+                </div>
+                <p class="paragraph content-text">To deploy the serverless app zip the .NET Core Lambda code and upload it to the S3 bucket. Then run the following command,</p>
+                <div class="content-text-code">
+                    <div>aws cloudformation deploy --stack-name lambda --template-file lambda.yaml --capabilities CAPABILITY_IAM</div>
+                </div>
+                <h3 class="content-subheader">Setting up a Topic and Queue with AWS SNS and AWS SQS</h3>
             </div>
             <div class="table full-width">
                 <div class="table-cell linkedin">

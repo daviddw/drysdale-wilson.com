@@ -191,6 +191,7 @@ ul {
 
 .content-text-code {
 	margin-top: 8px;
+	margin-bottom: 8px;
 	padding: 8px;
 	color: #2a2f36;
 	background-color: #f6f8fa;
@@ -214,12 +215,36 @@ ul {
 	padding-bottom: 1.000em;
 }
 
+.tabs2 {
+	padding-left: 15px;
+}
+
 .tabs4 {
 	padding-left: 30px;
 }
 
+.tabs6 {
+	padding-left: 45px;
+}
+
 .tabs8 {
 	padding-left: 60px;
+}
+
+.tabs10 {
+	padding-left: 75px;
+}
+
+.tabs12 {
+	padding-left: 90px;
+}
+
+.tabs16 {
+	padding-left: 120px;
+}
+
+.tabs20 {
+	padding-left: 150px;
 }
 
 .paragraph {
