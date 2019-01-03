@@ -114,7 +114,7 @@
                 <div class="content-text-code">
                     <div>ws://localhost:3000</div>
                 </div>
-                <h3 class="content-subheader">Publishing an image to Docker Hub</h3>
+                <h3 class="content-subheader">Publishing a Docker image to Docker Hub</h3>
                 <p class="paragraph content-text">Docker Hub is a cloud-based registry service, that provides a centralised location for container image distribution and change management, <a href="https://hub.docker.com">https://hub.docker.com</a>.</p>
                 <p class="paragraph content-text">Before you can publish a container image to Docker Hub you will need to have created an account and repository.</p>
                 <p class="paragraph content-text">Once you have created an account and repository, to push an image to Docker Hub, you use the following command,</p>
@@ -138,11 +138,13 @@
                     <div>queue:</div>
                     <div class="tabs2">Type: AWS::SQS::Queue</div>
                 </div>
+                <p class="paragraph content-text">More information on how to customise a queue can be found in Amazon's SQS Cloudformation guide, <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-sqs-queues.html">https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-sqs-queues.html</a></p>
                 <p class="paragraph content-text">And the following Cloudformation creates a topic with default properties,</p>
                 <div class="content-text-code">
                     <div>topic:</div>
                     <div class="tabs2">Type: AWS::SNS::Topic</div>
                 </div>
+                <p class="paragraph content-text">More information on how to customise a topic can be found in Amazon's SNS Cloudformation guide, <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-reference-sns.html">https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-reference-sns.html</a></p>
                 <p class="paragraph content-text">We then want our queue to subscribe to our topic in order to for our queue to receive any message that are published to our topic. The following Cloudformation will subscribe our queue to our topic,</p>
                 <div class="content-text-code">
                     <div>subscription:</div>
@@ -211,7 +213,7 @@
                     <div class="tabs10">Path: /appveyor</div>
                     <div class="tabs10">Method: POST</div>
                 </div>
-                <p class="paragraph content-text">We provide our Lambda function with the appropriate permissions through a policy. The awsLambdaPolicy policy defines permission to allow logging to AWS CloudWatch and publishing to an SNS Topic. The policy is defined in Cloudformation below,</p>
+                <p class="paragraph content-text">In order to provide our Lambda function with the appropriate permissions we assign a policy. The awsLambdaPolicy policy below defines the permissions to allow logging to AWS CloudWatch and publishing to an SNS Topic.</p>
                 <div class="content-text-code">
                     <div>awsLambdaPolicy:</div>
                     <div class="tabs2">Type: AWS::IAM::ManagedPolicy</div>
@@ -227,7 +229,7 @@
                     <div class="tabs10">- sns:Publish</div>
                     <div class="tabs8">Resource: "*"</div>
                 </div>
-                <p class="paragraph content-text">To deploy the serverless app zip the .NET Core Lambda code and upload it to the S3 bucket. Then run the following command,</p>
+                <p class="paragraph content-text">To deploy the serverless app, we need to zip the .NET Core Lambda code, upload it to the S3 bucket, then run the following command,</p>
                 <div class="content-text-code">
                     <div>aws cloudformation deploy --stack-name lambda --template-file lambda.yaml --capabilities CAPABILITY_IAM</div>
                 </div>
