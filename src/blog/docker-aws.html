@@ -145,7 +145,7 @@
                     <div class="tabs2">Type: AWS::SNS::Topic</div>
                 </div>
                 <p class="paragraph content-text">More information on how to customise a topic can be found in Amazon's SNS Cloudformation guide, <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-reference-sns.html">https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-reference-sns.html</a></p>
-                <p class="paragraph content-text">We then want our queue to subscribe to our topic in order to for our queue to receive any message that are published to our topic. The following Cloudformation will subscribe our queue to our topic,</p>
+                <p class="paragraph content-text">We then want our queue to subscribe to our topic in order to for our queue to receive any messages that are published to our topic. The following Cloudformation will subscribe our queue to our topic,</p>
                 <div class="content-text-code">
                     <div>subscription:</div>
                     <div class="tabs2">Type: AWS::SNS::Subscription</div>
@@ -188,7 +188,7 @@
                     <div class="tabs4">return response;</div>
                     <div>}</div>
                 </div>
-                <h3 class="content-subheader">Setting up an API Gateway and Lambda with AWS SAM</h3>
+                <h3 class="content-subheader">Creating an HTTP endpoint using API Gateway and Lambda</h3>
                 <p class="paragraph content-text">The AWS Serverless Application Model (SAM) is a new specification that makes it easy to deploy Serverless applications on AWS. It is possible with AWS SAM to specify Lambda functions and API Gateway APIs using AWS Cloudformation.</p>
                 <p class="paragraph content-text">In order to inform Cloudformation that the template defines a a Serverless application you need to add the following line under the template format version,</p>
                 <div class="content-text-code">
@@ -233,7 +233,85 @@
                 <div class="content-text-code">
                     <div>aws cloudformation deploy --stack-name lambda --template-file lambda.yaml --capabilities CAPABILITY_IAM</div>
                 </div>
-                <h3 class="content-subheader">Setting up a Topic and Queue with AWS SNS and AWS SQS</h3>
+                <h3 class="content-subheader">Running a Docker image on EC2 using ECS</h3>
+                <p class="paragraph content-text">Amazon Elastic Container Service (ECS), <a href="https://aws.amazon.com/ecs/">https://aws.amazon.com/ecs/</a>, is Amazon's container orchestration service that allows running Docker containerised applications on AWS.</p>
+                <p class="paragraph content-text">There are several resources involved in running a Docker application on ECS,</p>
+                <ul class="decimal">
+                    <li>Task definition - defines the application, i.e. memory/cpu usage, docker image etc</li>
+                    <li>Service - launches and manages copies of a task definition in the cluster</li>
+                    <li>Elastic load balancer - distributes traffic across container instances</li>
+                    <li>Cluster - set container instances running the ECS container agent</li>
+                    <li>IAM role - one to provide access to the ECS API and one to provide access to the load balancer</li>
+                    <li>Security group - defines network access to the EC2 instance</li>
+                </ul>
+                <p class="paragraph content-text">The diagram below provides an overview of how the AWS resources we are going to create relate to each other.</p>
+                <img id="aws-ecs-overview" class="content-image" alt="AWS ECS Overview" src="images/docker-aws-management.png" />
+                <p class="paragraph content-text">The first we need to create our task definition. The task definition defines the Docker image, along with the network protocols and the ports the application uses. The Cloudformation below declares our task,</p>
+                <div class="content-text-code">
+                    <div>awsWsTaskDefinition:</div>
+                    <div class="tabs2">Type: AWS::ECS::TaskDefinition</div>
+                    <div class="tabs2">Properties:</div>
+                    <div class="tabs4">TaskRoleArn: !GetAtt awsWsTaskDefinitionRole.Arn</div>
+                    <div class="tabs4">ContainerDefinitions:</div>
+                    <div class="tabs6">- Name: aws-ws-task</div>
+                    <div class="tabs8">Image: !Ref DockerImage</div>
+                    <div class="tabs8">Cpu: 1</div>
+                    <div class="tabs8">Memory: 128</div>
+                    <div class="tabs8">PortMappings:</div>
+                    <div class="tabs10">- ContainerPort: 3000</div>
+                    <div class="tabs12">HostPort: 0</div>
+                    <div class="tabs12">Protocol: tcp</div>
+                    <div class="tabs8">Environment:</div>
+                    <div class="tabs10">- Name: SQSENDPOINT</div>
+                    <div class="tabs12">Value: !Sub http://sqs.${AWS::Region}.amazonaws.com</div>
+                    <div class="tabs10">- Name: DOCKERTAG</div>
+                    <div class="tabs12">Value: !Ref DockerTag</div>
+                    <div class="tabs10">- Name: QUEUENAME</div>
+                    <div class="tabs12">Value: !ImportValue awsWsQueueName</div>
+                </div>
+                <p class="paragraph content-text">More information on how to customise a task can be found in Amazon's TaskDefinition Cloudformation guide, <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ecs-taskdefinition.html">https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ecs-taskdefinition.html</a></p>
+                <p class="paragraph content-text">In order for the task's application to access messages from a queue, we need to define and assign a role granting the neccessary permissions. The Cloudformation below grants these permissions,</p>
+                <div class="content-text-code">
+                    <div>awsWsTaskDefinitionRole:</div>
+                    <div class="tabs2">Type: AWS::IAM::Role</div>
+                    <div class="tabs2">Properties:</div>
+                    <div class="tabs4">AssumeRolePolicyDocument:</div>
+                    <div class="tabs6">Statement:</div>
+                    <div class="tabs8">- Effect: Allow</div>
+                    <div class="tabs10">Principal:</div>
+                    <div class="tabs12">Service: ecs-tasks.amazonaws.com</div>
+                    <div class="tabs10">Action: sts:AssumeRole</div>
+                    <div class="tabs4">Path: /</div>
+                    <div class="tabs4">Policies:</div>
+                    <div class="tabs4">- PolicyName: aws-ws-taskdefinition-role</div>
+                    <div class="tabs6">PolicyDocument:</div>
+                    <div class="tabs8">Statement:</div>
+                    <div class="tabs8">- Effect: Allow</div>
+                    <div class="tabs10">Action:</div>
+                    <div class="tabs12">- sqs:ReceiveMessage</div>
+                    <div class="tabs12">- sqs:DeleteMessage</div>
+                    <div class="tabs12">- sqs:GetQueueAttributes</div>
+                    <div class="tabs12">- sqs:GetQueueUrl</div>
+                    <div class="tabs12">- sqs:ListQueues</div>
+                    <div class="tabs10">Resource: "*"</div>
+                </div>
+                <p class="paragraph content-text"></p>
+                <div class="content-text-code">
+                    <div class="tabs2">awsWsService:</div>
+                    <div class="tabs4">Type: AWS::ECS::Service</div>
+                    <div class="tabs4">DependsOn: awsWsLoadBalancerListener</div>
+                    <div class="tabs4">Properties:</div>
+                    <div class="tabs6">ServiceName: aws-ws-service</div>
+                    <div class="tabs6">Cluster: !Ref awsWsCluster</div>
+                    <div class="tabs6">TaskDefinition: !Ref awsWsTaskDefinition</div>
+                    <div class="tabs6">DesiredCount: 1</div>
+                    <div class="tabs6">Role: !Ref awsWsServiceRole</div>
+                    <div class="tabs6">LoadBalancers:</div>
+                    <div class="tabs8">- ContainerName: aws-ws-task</div>
+                    <div class="tabs10">ContainerPort: 3000</div>
+                    <div class="tabs10">TargetGroupArn: !Ref awsWsTargetGroup</div>
+                </div>
+                <p class="paragraph"></p>
             </div>
             <div class="table full-width">
                 <div class="table-cell linkedin">
