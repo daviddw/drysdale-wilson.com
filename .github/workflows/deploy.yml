@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ master ]
 
+env:
+  AWS_DEFAULT_REGION: eu-west-1
+
 jobs:
   deploy:
 
