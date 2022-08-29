@@ -3,8 +3,8 @@ name: Drysdale-Wilson Website
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
+#  pull_request:
+#    branches: [ master ]
 
 env:
   AWS_DEFAULT_REGION: eu-west-1
