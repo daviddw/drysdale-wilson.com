@@ -16,11 +16,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Configure AWS credentials
+      - name: Assume GitHub role
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-region: ${{ env.AWS_DEFAULT_REGION }}
           role-to-assume: ${{ secrets.AWS_ACCESS_ROLE }}
-          role-session-name: OIDCSession
+      - name: Assume DrysdaleWilson role
+        uses: aws-action/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ env.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
+          role-to-assume: ${{ secrets.AWS_DRYSDALEWILSON_ACCESS_ROLE }}
       - name: Deploy
         run: aws s3 sync ./src s3://www.drysdale-wilson.com
