@@ -6,6 +6,10 @@ on:
 #  pull_request:
 #    branches: [ master ]
 
+permissions:
+  id-token: write
+  contents: read
+
 env:
   AWS_DEFAULT_REGION: eu-west-1
 
