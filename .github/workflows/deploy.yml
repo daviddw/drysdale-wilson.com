@@ -25,6 +25,7 @@ jobs:
         with:
           aws-region: ${{ env.AWS_DEFAULT_REGION }}
           role-to-assume: ${{ secrets.AWS_ACCESS_ROLE }}
+          role-duration-seconds: 1800
       - name: Assume DrysdaleWilson role
         uses: aws-action/configure-aws-credentials@v1
         with:
@@ -33,5 +34,6 @@ jobs:
           aws-session-token: ${{ env.AWS_SESSION_TOKEN }}
           aws-region: ${{ env.AWS_DEFAULT_REGION }}
           role-to-assume: ${{ secrets.AWS_DRYSDALEWILSON_ACCESS_ROLE }}
+          role-duration-seconds: 1800
       - name: Deploy
         run: aws s3 sync ./src s3://www.drysdale-wilson.com
