@@ -37,7 +37,8 @@
             $emailMessage .= "\nMessage:\n\n$message\n";
         }
 
-        mail("wedding@drysdale-wilson.com", $emailSubject, $emailMessage, $emailAddress);
+        // wedding date has passed so lets not send any emails
+        //mail("wedding@drysdale-wilson.com", $emailSubject, $emailMessage, $emailAddress);
 
         header("Location: thanks.php?rsvp=$yesorno");
     }
